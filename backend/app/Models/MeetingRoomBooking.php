@@ -59,7 +59,7 @@ class MeetingRoomBooking extends Model
                     $existing_booking = $query->first();
 
                     if ($existing_booking) {
-                        $fail('The room is already booked for the chosen time.');
+                        $fail('The time is already booked.');
                     }
                 },
             ],
@@ -87,10 +87,10 @@ class MeetingRoomBooking extends Model
                     $existing_booking = $query->first();
 
                     if ($existing_booking) {
-                        $fail('The room is already booked for the chosen time.');
+                        $fail('The time is already booked.');
                     }
                 }
-            ],
+            ]
         ];
     }
 }

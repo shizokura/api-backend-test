@@ -45,12 +45,19 @@
         </tr>
       </tbody>
     </q-markup-table>
+    <div style="text-align: center; margin: auto; margin-top: 25px; width: max-content;">
+      <q-pagination
+        v-model="bookings.current_page"
+        :max="Math.ceil(bookings.total / bookings.per_page)"
+        direction-links
+      />
+    </div>
     <booking-dialog ref="dialog" @load="loadBookings" />
   </q-page>
 </template>
 
 <script>
-import { defineComponent, onMounted, ref } from 'vue';
+import { defineComponent, onMounted, ref, watch } from 'vue';
 import { api } from '../boot/axios';
 import BookingDialog from 'src/components/BookingDialog.vue';
 
@@ -64,17 +71,19 @@ export default defineComponent({
       data: [],
       current_page: 1,
       last_page: 1,
+      per_page: 10,
+      total: 0
     });
 
-    const page = ref(1);
     const dialog = ref(null);
     const isLoggedIn = localStorage.getItem('token') ? true : false;
 
     const loadBookings = () => {
       api
-        .get(`/bookings?page=${page.value}`)
+        .get(`/bookings?page=${bookings.value.current_page}`)
         .then((response) => {
           bookings.value = response.data.bookings;
+          console.log(bookings.value);
         })
         .catch((error) => {
           console.error('Error loading bookings:', error);
@@ -94,6 +103,10 @@ export default defineComponent({
     };
 
     onMounted(() => {
+      loadBookings();
+    });
+
+    watch(() => bookings.value.current_page, () => {
       loadBookings();
     });
 

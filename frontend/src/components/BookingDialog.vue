@@ -66,6 +66,8 @@ export default defineComponent({
     });
 
     const show = async (showType, showId = null) => {
+      id.value = null;
+
       if (showId) {
         Loading.show();
 

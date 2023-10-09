@@ -39,7 +39,7 @@ class MeetingRoomBooking extends Model
         return Carbon::createFromFormat('Y-m-d', $value)->format('F d, Y');
     }
 
-    public static function rules()
+    public static function rules($id = null)
     {
         return [
             'room_name' => 'required',
@@ -47,14 +47,16 @@ class MeetingRoomBooking extends Model
             'booking_from' => [
                 'required',
                 'date_format:H:i:s',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail) use ($id) {
                     // Validate the start time is between 8:00 AM and 5:00 PM
                     if (strtotime($value) < strtotime('08:00:00') || strtotime($value) > strtotime('17:00:00')) {
                         $fail('The booking start time must be between 8:00 AM and 5:00 PM.');
                     }
 
                     // validate if already exists
-                    $existing_booking = self::where('booking_date', request('booking_date'))->where('booking_from', $value)->first();
+                    $query = self::where('booking_date', request('booking_date'))->where('booking_from', $value);
+                    if ($id) $query = $query->where('id', '!=', $id);
+                    $existing_booking = $query->first();
 
                     if ($existing_booking) {
                         $fail('The room is already booked for the chosen time.');
@@ -65,7 +67,7 @@ class MeetingRoomBooking extends Model
                 'required',
                 'date_format:H:i:s',
                 'after:booking_from', // Ensure end time is after start time
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail) use ($id) {
                     // Calculate the booking duration in minutes
                     $start_time = strtotime(request('booking_from'));
                     $end_time = strtotime($value);
@@ -80,7 +82,9 @@ class MeetingRoomBooking extends Model
                         $fail('The booking duration must be either 30 minutes or 1 hour.');
                     }
 
-                    $existing_booking = self::where('booking_date', request('booking_date'))->where('booking_to', $value)->first();
+                    $query = self::where('booking_date', request('booking_date'))->where('booking_to', $value);
+                    if ($id) $query = $query->where('id', '!=', $id);
+                    $existing_booking = $query->first();
 
                     if ($existing_booking) {
                         $fail('The room is already booked for the chosen time.');

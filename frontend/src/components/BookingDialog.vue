@@ -27,6 +27,31 @@ import { defineComponent, ref } from 'vue';
 import { Loading, Dialog } from 'quasar';
 import { api } from 'src/boot/axios';
 
+function convertTimeToInputFormat(timeString) {
+  // Create a Date object with a fixed date and the provided time
+  const date = new Date('January 1, 2020 ' + timeString);
+
+  // Get the hours and minutes
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  // Format as "HH:mm"
+  return hours + ':' + minutes;
+}
+
+function convertDateToInputFormat(dateString) {
+    // Create a Date object with the provided date string
+    const date = new Date(dateString);
+
+    // Get the year, month, and day
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+    const day = date.getDate().toString().padStart(2, '0');
+
+    // Format as "YYYY-MM-DD"
+    return `${year}-${month}-${day}`;
+}
+
 export default defineComponent({
   name: 'BookingDialog',
   setup(_, { emit }) {
@@ -40,16 +65,35 @@ export default defineComponent({
       booking_to: ''
     });
 
-    const show = (showType, showId = null) => {
+    const show = async (showType, showId = null) => {
+      if (showId) {
+        Loading.show();
+
+        id.value = showId;
+
+        const result = await api.get(`/bookings/${ showId }`, { headers: {'Authorization' : `Bearer ${localStorage.getItem('token')}`} }).catch(console.log);
+
+        if (result) {
+          formData.value.room_name = result?.data?.booking?.room_name;
+          formData.value.booking_date = convertDateToInputFormat(result?.data?.booking?.booking_date);
+          formData.value.booking_from = convertTimeToInputFormat(result?.data?.booking?.booking_from);
+          formData.value.booking_to = convertTimeToInputFormat(result?.data?.booking?.booking_to);
+        } else {
+          alert('Some error occurred');
+        }
+
+        Loading.hide();
+      } else {
+        formData.value = {
+          room_name: '',
+          booking_date: '',
+          booking_from: '',
+          booking_to: ''
+        };
+      }
+
       type.value = showType;
-      formData.value = {
-        room_name: '',
-        booking_date: '',
-        booking_from: '',
-        booking_to: ''
-      };
       dialog.value = true;
-      if (showId) id.value = showId;
     };
 
     const onSubmit = async () => {
@@ -60,7 +104,7 @@ export default defineComponent({
       if (submitData.booking_from) submitData.booking_from = `${submitData.booking_from}:00`;
       if (submitData.booking_to) submitData.booking_to = `${submitData.booking_to}:00`;
 
-      const response = await api.put('/bookings', submitData, { headers: {'Authorization' : `Bearer ${localStorage.getItem('token')}`} })
+      const response = await api[`${ id.value ? 'patch' : 'put' }`](`/bookings/${ id.value || '' }`, submitData, { headers: {'Authorization' : `Bearer ${localStorage.getItem('token')}`} })
         .catch(err => {
           if (err?.response?.data?.messages) {
             Dialog.create({

@@ -38,4 +38,23 @@ class BookingController extends Controller
         $booking = MeetingRoomBooking::with('user')->find($id);
         return response()->json(['booking' => $booking], 200);
     }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $request->validate(MeetingRoomBooking::rules($id));
+        } catch (ValidationException $e) {
+            return response()->json([ 'status' => 'error', 'message' => 'Validation Error', 'messages' => $e->errors() ], 503);
+        }
+
+        $booking = MeetingRoomBooking::where('id', $id)->update([
+            'room_name' => $request->room_name,
+            'booking_date' => $request->booking_date,
+            'booking_from' => $request->booking_from,
+            'booking_to' => $request->booking_to,
+            'user_id' => $request->user()->id
+        ]);
+
+        return response()->json(['booking' => $booking], 200);
+    }
 }

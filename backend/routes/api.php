@@ -25,13 +25,16 @@ Route::post('/login', [UserController::class, 'login']);
 Route::post('/register', [UserController::class, 'register']);
 
 // booking list
-Route::get('bookings', [BookingController::class, 'index']);
+Route::get('/bookings', [BookingController::class, 'index']);
 
 // if logged in
 Route::group(['middleware' => 'auth:sanctum'], function () {
+    // logout
     Route::post('/logout', [UserController::class, 'logout']);
 
-    // create booking
-    // update booking
-    // delete booking
+    // booking
+    Route::put('/bookings', [BookingController::class, 'create']);
+
+    // Route::put('/bookings', [BookingController::class, 'update']);
+    // Route::put('/bookings', [BookingController::class, 'delete']);
 });

@@ -19,21 +19,21 @@ class MeetingRoomBookingSeeder extends Seeder
                 'user_id' => 1,
                 'booking_date' => '2023-10-09',
                 'booking_from' => '10:00:00',
-                'booking_to' => '11:30:00',
+                'booking_to' => '11:00:00',
             ],
             [
                 'room_name' => 'Meeting Room B',
                 'user_id' => 1,
-                'booking_date' => '2023-10-10',
-                'booking_from' => '14:00:00',
-                'booking_to' => '15:30:00',
+                'booking_date' => '2023-10-09',
+                'booking_from' => '11:00:00',
+                'booking_to' => '11:30:00',
             ],
             [
                 'room_name' => 'Meeting Room C',
                 'user_id' => 1,
-                'booking_date' => '2023-10-11',
-                'booking_from' => '09:30:00',
-                'booking_to' => '10:30:00',
+                'booking_date' => '2023-10-09',
+                'booking_from' => '11:30:00',
+                'booking_to' => '12:30:00',
             ],
         ];
 

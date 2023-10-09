@@ -33,6 +33,7 @@ class UserController extends Controller
     {
         try {
             $request->validate([
+                'password' => 'required',
                 'email' => 'required|email|unique:users',
                 'password' => 'required'
             ]);
@@ -41,8 +42,10 @@ class UserController extends Controller
         }
 
         User::create([
+            'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password
+            'password' => $request->password,
+            'role' => 'user'
         ]);
 
         return response()->json([ 'status' => 'success', 'message' => 'Successful Registered' ], 200);

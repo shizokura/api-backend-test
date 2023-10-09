@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BookingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +25,7 @@ Route::post('/login', [UserController::class, 'login']);
 Route::post('/register', [UserController::class, 'register']);
 
 // booking list
-
+Route::get('bookings', [BookingController::class, 'index']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     // create booking

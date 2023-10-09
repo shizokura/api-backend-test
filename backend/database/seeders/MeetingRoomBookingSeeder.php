@@ -16,21 +16,21 @@ class MeetingRoomBookingSeeder extends Seeder
         $bookings = [
             [
                 'room_name' => 'Meeting Room A',
-                'booked_by' => 'John Doe',
+                'user_id' => 1,
                 'booking_date' => '2023-10-09',
                 'booking_from' => '10:00:00',
                 'booking_to' => '11:30:00',
             ],
             [
                 'room_name' => 'Meeting Room B',
-                'booked_by' => 'Jane Smith',
+                'user_id' => 1,
                 'booking_date' => '2023-10-10',
                 'booking_from' => '14:00:00',
                 'booking_to' => '15:30:00',
             ],
             [
                 'room_name' => 'Meeting Room C',
-                'booked_by' => 'Alice Johnson',
+                'user_id' => 1,
                 'booking_date' => '2023-10-11',
                 'booking_from' => '09:30:00',
                 'booking_to' => '10:30:00',

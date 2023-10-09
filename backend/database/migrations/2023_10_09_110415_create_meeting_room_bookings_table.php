@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('meeting_room_bookings', function (Blueprint $table) {
             $table->id();
             $table->string('room_name');
-            $table->string('booked_by');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->date('booking_date');
             $table->time('booking_from');
             $table->time('booking_to');

@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import { api } from '../boot/axios';
 import { Loading, Dialog } from 'quasar';
 import { useRouter } from 'vue-router';
@@ -66,6 +66,12 @@ export default defineComponent({
       formData.value.name = '';
     }
 
+    onMounted(() => {
+      if (localStorage.getItem('token')) {
+        router.push('/');
+      }
+    });
+
     const onSubmit = async () => {
       Loading.show();
 
@@ -86,7 +92,7 @@ export default defineComponent({
 
       if (result) {
         localStorage.setItem('token', result?.data?.token);
-        router.push('/bookings');
+        router.push('/');
       }
 
       Loading.hide();

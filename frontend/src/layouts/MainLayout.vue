@@ -6,7 +6,8 @@
           Meeting Room Booking
         </q-toolbar-title>
         <div>
-          <q-btn v-if="route.path === '/bookings'" @click="logout" label="Logout" color="Logout" unelevated />
+          <q-btn v-if="!isLoggedIn && route.path !== '/login'" @click="$router.push('/login')" label="Login" unelevated />
+          <q-btn v-if="isLoggedIn" @click="logout" label="Logout" unelevated />
         </div>
       </q-toolbar>
     </q-header>
@@ -18,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, watch, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '../boot/axios';
 
@@ -30,16 +31,25 @@ export default defineComponent({
   setup () {
     const router = useRouter();
     const route = useRoute();
+    const isLoggedIn = ref(localStorage.getItem('token') ? true : false);
+
+    watch(
+      () => route.fullPath,
+      async () => {
+        isLoggedIn.value = localStorage.getItem('token') ? true : false;
+      }
+    );
 
     const logout = async () => {
       await api.post('/logout', {}, { headers: {'Authorization' : `Bearer ${localStorage.getItem('token')}`} }).catch(console.log);
       localStorage.removeItem('token');
-      return router.push('/');
+      return router.push('/login');
     };
 
     return {
       logout,
-      route
+      route,
+      isLoggedIn
     }
   }
 });

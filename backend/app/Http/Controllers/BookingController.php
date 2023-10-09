@@ -32,4 +32,10 @@ class BookingController extends Controller
 
         return response()->json(['booking' => $booking], 200);
     }
+
+    public function get($id)
+    {
+        $booking = MeetingRoomBooking::with('user')->find($id);
+        return response()->json(['booking' => $booking], 200);
+    }
 }

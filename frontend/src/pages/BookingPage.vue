@@ -14,7 +14,7 @@
       <tbody>
         <tr v-for="booking in bookings.data" :key="booking.id">
           <td class="text-left">{{ booking.room_name }}</td>
-          <td class="text-left">{{ booking.booked_by }}</td>
+          <td class="text-left">{{ booking.user.name }}</td>
           <td class="text-left">{{ booking.booking_date }}</td>
           <td class="text-left">{{ booking.booking_from }}</td>
           <td class="text-left">{{ booking.booking_to }}</td>
@@ -44,6 +44,7 @@
 
 <script>
 import { defineComponent, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { api } from '../boot/axios';
 
 export default defineComponent({
@@ -76,7 +77,14 @@ export default defineComponent({
       console.log('Remove');
     };
 
+    const router = useRouter();
+
     onMounted(() => {
+      if (!localStorage.getItem('token')) {
+        router.push('/');
+        return;
+      }
+
       loadBookings();
     });
 

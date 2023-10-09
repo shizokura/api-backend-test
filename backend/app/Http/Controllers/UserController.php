@@ -35,19 +35,31 @@ class UserController extends Controller
             $request->validate([
                 'password' => 'required',
                 'email' => 'required|email|unique:users',
-                'password' => 'required'
+                'password' => 'required',
+                'name' => 'required'
             ]);
         } catch (ValidationException $e) {
             return response()->json([ 'status' => 'error', 'message' => 'Validation Error', 'messages' => $e->errors() ], 503);
         }
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password,
             'role' => 'user'
         ]);
 
-        return response()->json([ 'status' => 'success', 'message' => 'Successful Registered' ], 200);
+        return response()->json([ 'status' => 'success', 'message' => 'Successful Registered', 'token' => $user->createToken('user')->plainTextToken ], 200);
+    }
+
+    public function logout(Request $request)
+    {
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+        } else {
+            return response()->json([ 'status' => 'error', 'message' => 'User is missing' ], 503);
+        }
+
+        return response()->json([ 'status' => 'success', 'message' => 'Successful Logout' ], 200);
     }
 }

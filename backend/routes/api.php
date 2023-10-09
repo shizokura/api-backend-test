@@ -27,7 +27,10 @@ Route::post('/register', [UserController::class, 'register']);
 // booking list
 Route::get('bookings', [BookingController::class, 'index']);
 
+// if logged in
 Route::group(['middleware' => 'auth:sanctum'], function () {
+    Route::post('/logout', [UserController::class, 'logout']);
+
     // create booking
     // update booking
     // delete booking

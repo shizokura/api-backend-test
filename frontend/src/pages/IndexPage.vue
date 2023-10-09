@@ -7,6 +7,14 @@
         class="q-gutter-md"
       >
         <q-input
+          v-if="isRegister"
+          filled
+          v-model="formData.name"
+          type="text"
+          label="Full Name"
+        />
+
+        <q-input
           filled
           v-model="formData.email"
           type="email"
@@ -45,7 +53,8 @@ export default defineComponent({
 
     const formData = ref({
       email: '',
-      password: ''
+      password: '',
+      name: ''
     });
 
     const isRegister = ref(false);
@@ -54,6 +63,7 @@ export default defineComponent({
       isRegister.value = !isRegister.value;
       formData.value.email = '';
       formData.value.password = '';
+      formData.value.name = '';
     }
 
     const onSubmit = async () => {
@@ -64,7 +74,7 @@ export default defineComponent({
           if (err?.response?.data?.messages) {
             Dialog.create({
               title: 'Error',
-              message: err?.response?.data?.messages?.email || err?.response?.data?.messages?.password
+              message: err?.response?.data?.messages?.email || err?.response?.data?.messages?.password || err?.response?.data?.messages?.name
             });
           } else {
             Dialog.create({
@@ -75,7 +85,7 @@ export default defineComponent({
         });
 
       if (result) {
-        console.log(result);
+        localStorage.setItem('token', result?.data?.token);
         router.push('/bookings');
       }
 

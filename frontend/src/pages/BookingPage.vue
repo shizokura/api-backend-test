@@ -9,16 +9,41 @@
     <q-markup-table>
       <thead>
         <tr>
-          <th class="text-left">Room Name</th>
-          <th class="text-left">Booked By</th>
-          <th class="text-left">Date</th>
-          <th class="text-left">From</th>
-          <th class="text-left">To</th>
+          <th class="text-left" @click="toggleSort('room_name')">
+            Room Name
+            <span v-if="sortColumn === 'room_name'">
+              <i class="fas" :class="sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            </span>
+          </th>
+          <th class="text-left" @click="toggleSort('users.name')">
+            Booked By
+            <span v-if="sortColumn === 'users.name'">
+              <i class="fas" :class="sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            </span>
+          </th>
+          <th class="text-left" @click="toggleSort('booking_date')">
+            Date
+            <span v-if="sortColumn === 'booking_date'">
+              <i class="fas" :class="sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            </span>
+          </th>
+          <th class="text-left" @click="toggleSort('booking_from')">
+            From
+            <span v-if="sortColumn === 'booking_from'">
+              <i class="fas" :class="sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            </span>
+          </th>
+          <th class="text-left" @click="toggleSort('booking_to')">
+            To
+            <span v-if="sortColumn === 'booking_to'">
+              <i class="fas" :class="sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+            </span>
+          </th>
           <th v-if="isLoggedIn" class="text-center"></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="booking in bookings.data" :key="booking.id">
+        <tr v-for="(booking, index) in bookings.data" :key="index">
           <td class="text-left">{{ booking.room_name }}</td>
           <td class="text-left">{{ booking.user.name }}</td>
           <td class="text-left">{{ booking.booking_date }}</td>
@@ -34,7 +59,7 @@
                 </q-item>
               </q-list>
               <q-list>
-                <q-item clickable v-close-popup @click="remove">
+                <q-item clickable v-close-popup @click="remove(booking.id)">
                   <q-item-section>
                     <q-item-label>Delete</q-item-label>
                   </q-item-section>
@@ -56,10 +81,24 @@
   </q-page>
 </template>
 
+<style lang="scss" scoped>
+th {
+  span {
+    i {
+      height: 10px;
+      width: 10px;
+      font-size: 10px;
+      padding-left: 5px;
+    }
+  }
+}
+</style>
+
 <script>
 import { defineComponent, onMounted, ref, watch } from 'vue';
 import { api } from '../boot/axios';
 import BookingDialog from 'src/components/BookingDialog.vue';
+import { Loading, useQuasar } from 'quasar';
 
 export default defineComponent({
   name: 'BookingPage',
@@ -77,13 +116,26 @@ export default defineComponent({
 
     const dialog = ref(null);
     const isLoggedIn = localStorage.getItem('token') ? true : false;
+    const $q = useQuasar();
+    const sortColumn = ref('booking_date'); // Initial sorting column
+    const sortOrder = ref('asc'); // Initial sorting order
+
+    const toggleSort = (column) => {
+      if (sortColumn.value === column) {
+        sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn.value = column;
+        sortOrder.value = 'asc';
+      }
+      loadBookings();
+    };
 
     const loadBookings = () => {
       api
-        .get(`/bookings?page=${bookings.value.current_page}`)
+        .get(`/bookings?page=${bookings.value.current_page}&sort_column=${sortColumn.value}&sort_order=${sortOrder.value}`)
         .then((response) => {
+          console.log(response.data.bookings.length);
           bookings.value = response.data.bookings;
-          console.log(bookings.value);
         })
         .catch((error) => {
           console.error('Error loading bookings:', error);
@@ -98,8 +150,18 @@ export default defineComponent({
       dialog.value.show('edit', id);
     };
 
-    const remove = () => {
-      console.log('Remove');
+    const remove = (id) => {
+      $q.dialog({
+        title: 'Confirm',
+        message: 'Are you sure to delete this data?',
+        cancel: true,
+        persistent: true
+      }).onOk(async () => {
+        Loading.show();
+        await api.delete(`/bookings/${id}`, { headers: {'Authorization' : `Bearer ${localStorage.getItem('token')}`} }).catch(console.log);
+        loadBookings();
+        Loading.hide();
+      });
     };
 
     onMounted(() => {
@@ -117,7 +179,10 @@ export default defineComponent({
       add,
       edit,
       remove,
-      isLoggedIn
+      isLoggedIn,
+      toggleSort,
+      sortColumn,
+      sortOrder
     }
   }
 })

@@ -9,9 +9,15 @@ use App\Models\User;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = MeetingRoomBooking::with('user')->paginate(10);
+        $query = MeetingRoomBooking::with('user')->join('users', 'meeting_room_bookings.user_id', '=', 'users.id');
+
+        if ($request->sort_column && $request->sort_order) {
+            $query = $query->orderBy($request->sort_column, $request->sort_order);
+        }
+
+        $bookings = $query->paginate(10);
         return response()->json(['bookings' => $bookings], 200);
     }
 
@@ -60,6 +66,13 @@ class BookingController extends Controller
             'booking_from' => $request->booking_from,
             'booking_to' => $request->booking_to
         ]);
+
+        return response()->json(['booking' => $booking], 200);
+    }
+
+    public function delete($id)
+    {
+        $booking = MeetingRoomBooking::where('id', $id)->delete();
 
         return response()->json(['booking' => $booking], 200);
     }

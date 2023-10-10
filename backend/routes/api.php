@@ -26,6 +26,7 @@ Route::post('/register', [UserController::class, 'register']);
 
 // booking list
 Route::get('/bookings', [BookingController::class, 'index']);
+Route::get('/bookings/groups', [BookingController::class, 'group']);
 
 // if logged in
 Route::group(['middleware' => 'auth:sanctum'], function () {

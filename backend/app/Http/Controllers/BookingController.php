@@ -17,6 +17,22 @@ class BookingController extends Controller
             $query = $query->orderBy($request->sort_column, $request->sort_order);
         }
 
+        if ($request->from && $request->to) {
+            $query = $query->whereBetween('booking_date', [$request->from, $request->to]);
+        }
+
+        if ($request->meeting_room) {
+            $query = $query->where('room_name', $request->meeting_room);
+        }
+
+        if (auth('sanctum')->user() && $request->user === 'My Bookings') {
+            $query = $query->where('user_id', auth('sanctum')->user()->id);
+        }
+
+        if ($request->search) {
+            $query = $query->where('users.name', 'LIKE', "%$request->search%")->orWhere('room_name', 'LIKE', "%$request->search%");
+        }
+
         $bookings = $query->paginate(10);
         return response()->json(['bookings' => $bookings], 200);
     }
@@ -75,5 +91,15 @@ class BookingController extends Controller
         $booking = MeetingRoomBooking::where('id', $id)->delete();
 
         return response()->json(['booking' => $booking], 200);
+    }
+
+    public function group()
+    {
+        $groupedBookings = MeetingRoomBooking::select('room_name')
+                                             ->selectRaw('COUNT(*) as count')
+                                             ->groupBy('room_name')
+                                             ->get();
+
+        return response()->json(['bookings' => $groupedBookings], 200);
     }
 }

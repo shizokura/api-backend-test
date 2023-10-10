@@ -6,6 +6,16 @@
         <q-btn @click="add" unelevated color="primary" label="Add +" />
       </div>
     </div>
+    <div style="display: flex; gap: 15px; justify-content: right; margin-bottom: 15px; align-items: center;">
+      <q-select v-if="isLoggedIn" v-model="filterBy.user" style="width: 150px;" label="User" :options="['All', 'My Bookings']" />
+      <q-select v-model="filterBy.meeting_room" style="width: 150px;" label="Meeting Room" :options="meetingGroupOptions" />
+      <q-input v-model="filterBy.from" type="date" label="From" />
+      <q-input v-model="filterBy.to" type="date" label="To" />
+      <q-input v-model="filterBy.search" type="text" label="Search" />
+      <div>
+        <q-btn label="Clear All Filter" color="primary" @click="clearFilter" unelevated />
+      </div>
+    </div>
     <q-markup-table>
       <thead>
         <tr>
@@ -77,7 +87,7 @@
         direction-links
       />
     </div>
-    <booking-dialog ref="dialog" @load="loadBookings" />
+    <booking-dialog ref="dialog" @load="() => { loadBookings(); loadGroupOptions(); }" />
   </q-page>
 </template>
 
@@ -99,6 +109,7 @@ import { defineComponent, onMounted, ref, watch } from 'vue';
 import { api } from '../boot/axios';
 import BookingDialog from 'src/components/BookingDialog.vue';
 import { Loading, useQuasar } from 'quasar';
+import { debounce } from 'lodash';
 
 export default defineComponent({
   name: 'BookingPage',
@@ -120,6 +131,28 @@ export default defineComponent({
     const sortColumn = ref('booking_date'); // Initial sorting column
     const sortOrder = ref('asc'); // Initial sorting order
 
+    const filterBy = ref({
+      from: null,
+      to: null,
+      meeting_room: null,
+      user: 'All',
+      search: null
+    });
+
+    const meetingGroupOptions = ref([]);
+
+    watch(filterBy.value, debounce(() => {
+      loadBookings();
+    }, 300));
+
+    const clearFilter = () => {
+      filterBy.value.from = null;
+      filterBy.value.to = null;
+      filterBy.value.meeting_room = null;
+      filterBy.value.user = 'All';
+      filterBy.value.search = null;
+    };
+
     const toggleSort = (column) => {
       if (sortColumn.value === column) {
         sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
@@ -132,10 +165,28 @@ export default defineComponent({
 
     const loadBookings = () => {
       api
-        .get(`/bookings?page=${bookings.value.current_page}&sort_column=${sortColumn.value}&sort_order=${sortOrder.value}`)
+        .get('/bookings', {
+          params: {
+            page: bookings.value.current_page,
+            sort_column: sortColumn.value,
+            sort_order: sortOrder.value,
+            ...filterBy.value
+          },
+          headers: {'Authorization' : `Bearer ${localStorage.getItem('token')}`}
+        })
         .then((response) => {
-          console.log(response.data.bookings.length);
           bookings.value = response.data.bookings;
+        })
+        .catch((error) => {
+          console.error('Error loading bookings:', error);
+        });
+    };
+
+    const loadGroupOptions = () => {
+      api
+        .get('/bookings/groups', { headers: {'Authorization' : `Bearer ${localStorage.getItem('token')}`} })
+        .then((response) => {
+          meetingGroupOptions.value = response.data.bookings.map(booking => booking.room_name);
         })
         .catch((error) => {
           console.error('Error loading bookings:', error);
@@ -166,6 +217,7 @@ export default defineComponent({
 
     onMounted(() => {
       loadBookings();
+      loadGroupOptions();
     });
 
     watch(() => bookings.value.current_page, () => {
@@ -182,7 +234,10 @@ export default defineComponent({
       isLoggedIn,
       toggleSort,
       sortColumn,
-      sortOrder
+      sortOrder,
+      filterBy,
+      meetingGroupOptions,
+      clearFilter
     }
   }
 })

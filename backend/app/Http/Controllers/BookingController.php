@@ -11,7 +11,7 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = MeetingRoomBooking::with('user')->join('users', 'meeting_room_bookings.user_id', '=', 'users.id');
+        $query = MeetingRoomBooking::with('user')->select('meeting_room_bookings.*')->join('users', 'meeting_room_bookings.user_id', '=', 'users.id');
 
         if ($request->sort_column && $request->sort_order) {
             $query = $query->orderBy($request->sort_column, $request->sort_order);

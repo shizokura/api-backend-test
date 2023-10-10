@@ -43,7 +43,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(booking, index) in bookings.data" :key="index">
+        <tr v-for="booking in bookings.data" :key="booking.id">
           <td class="text-left">{{ booking.room_name }}</td>
           <td class="text-left">{{ booking.user.name }}</td>
           <td class="text-left">{{ booking.booking_date }}</td>

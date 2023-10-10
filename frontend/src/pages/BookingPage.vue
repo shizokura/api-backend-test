@@ -237,7 +237,8 @@ export default defineComponent({
       sortOrder,
       filterBy,
       meetingGroupOptions,
-      clearFilter
+      clearFilter,
+      loadGroupOptions
     }
   }
 })
